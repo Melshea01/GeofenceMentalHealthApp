@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="app1">#FFE9EDC9</color>
+    <color name="app2">#FFCCD5AE</color>
+    <color name="app3">#FFFEFAE0</color>
+    <color name="app4">#FFFAEDCD</color>
+    <color name="app5">#FFD4A373</color>
+    <color name="app6">#FFA97B4D</color>
+    <color name="fushia_80">#FFF178B6</color>
+
+</resources>
