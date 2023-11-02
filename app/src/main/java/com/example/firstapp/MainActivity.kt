@@ -1,86 +1,71 @@
 package com.example.firstapp
 
-import android.Manifest.permission
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
+import android.view.Gravity
+import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
-import androidx.core.location.LocationManagerCompat
-import com.example.firstapp.ui.theme.FirstAppTheme
+import com.example.firstapp.databinding.ActivityMainBinding
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
 
+
 class MainActivity : ComponentActivity() {
-    private val REQUEST_CODE_PERMISSIONS = 1
     private lateinit var geofencingClient: GeofencingClient
-    private val  TAG = "MainActivity";
+    private val  TAG = "MainActivity"
+    private lateinit var binding: ActivityMainBinding
+    private var locationManager: LocationManager? = null
+
+    val questionnaire = QuestionnaireGAD7()
 
     // Run broadcast receiver
     private val geofencePendingIntent: PendingIntent by lazy {
         val intent = Intent(this, GeofenceBroadcastReceiver::class.java)
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when calling
-        // addGeofences() and removeGeofences().
         PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         // Create channel for notification
         createChannel(this)
 
         // Get geofencing client
         geofencingClient = LocationServices.getGeofencingClient(this)
 
-        //Request the permission
-        ActivityCompat.requestPermissions(
-            this, arrayOf<String>(
-                permission.ACCESS_COARSE_LOCATION,
-                permission.ACCESS_FINE_LOCATION,
-                permission.ACCESS_BACKGROUND_LOCATION,
-            ),
-            PackageManager.PERMISSION_GRANTED
+        //find the view
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        checkGpsStatus()
+
+        val permissionsToCheck = arrayOf(
+            android.Manifest.permission.ACCESS_COARSE_LOCATION,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+            android.Manifest.permission.POST_NOTIFICATIONS
         )
 
-        if (ActivityCompat.checkSelfPermission(this, permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
-            // Handle the case where the user has not granted location
-            //Request the permission
-            ActivityCompat.requestPermissions(
-                this, arrayOf<String>(
-                    permission.ACCESS_COARSE_LOCATION,
-                    permission.ACCESS_FINE_LOCATION,
-                    permission.ACCESS_BACKGROUND_LOCATION,
-                ),
-                PackageManager.PERMISSION_GRANTED
-            )
+        val allPermissionsGranted = permissionsToCheck.all {
+            ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
+        }
 
-            setContent {
-                    FirstAppTheme {
-                        Text(text = "No authorization granted or no GPS enabled")
-                        Log.d(TAG, "No authorization granted or no GPS enabled")
-                    }
-                }
-        } else {
+        if (allPermissionsGranted) {
+            // Permissions are granted. You can proceed with your main activity's functionality.
 
-            //If permission is granted , we can create and add the geofence
             // Creation of the geofence
             val geofence = Geofence.Builder()
                 .setRequestId("TestGeofence")
@@ -106,45 +91,65 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            displayQuestion()
 
+        } else {
+            // Permissions denied. Show a message to the user.
+            val t = Toast.makeText(this, "Permissions are not granted. Please enable notifications and localization", Toast.LENGTH_LONG)
+            t.setGravity(Gravity.TOP, 0, 0)
+            t.show()
+            Log.d(TAG, "Permission not granted")
 
-
-            //Display graphic
-            setContent {
-                FirstAppTheme {
-                    // A surface container using the 'background' color from the theme
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = MaterialTheme.colorScheme.background
-                    ) {
-                        Greeting("Android!")
-                    }
-                }
-            }
-
+            // Optionally, provide the option for the user to redirect to the app settings to grant permissions.
+            // You can add a button or link in your UI to trigger this function.
+            redirectToAppSettings()
         }
 
+            //Display graphic and interesting icon for the next grpahique
+            //<a href="https://storyset.com/data">Data illustrations by Storyset</a>
+            //<a href="https://storyset.com/people">People illustrations by Storyset</a>
+
+
     }
 
-    fun isLocationEnabled(context: Context): Boolean {
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-        return LocationManagerCompat.isLocationEnabled(locationManager)
+    @RequiresApi(Build.VERSION_CODES.Q)
+    override fun onStart() {
+        super.onStart()
     }
+
+    private fun checkGpsStatus() {
+        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        if (locationManager != null && !locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            // GPS is not enabled. You can show a dialog or prompt the user to enable it.
+            // Ask the user to enable GPS.
+            val enableGpsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+            startActivity(enableGpsIntent)
+        }
+    }
+
+    private fun redirectToAppSettings() {
+        // Redirect the user to the app settings to request permissions.
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        val uri = Uri.fromParts("package", packageName, null)
+        intent.data = uri
+        startActivity(intent)
+    }
+
+    private fun displayQuestion(){
+        binding.QuestionText.text = questionnaire.getNextQuestion()
+        binding.radioButtonOption1.text = questionnaire.getResponseByIndex(0)
+        binding.radioButtonOption2.text = questionnaire.getResponseByIndex(1)
+        binding.radioButtonOption3.text = questionnaire.getResponseByIndex(2)
+        binding.radioButtonOption4.text = questionnaire.getResponseByIndex(3)
+    }
+
+    private fun nextButton(){
+
+    }
+
 
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FirstAppTheme {
-        Greeting("Android")
-    }
-}
+
+

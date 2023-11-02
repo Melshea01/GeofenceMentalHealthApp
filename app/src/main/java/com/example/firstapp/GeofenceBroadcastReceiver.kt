@@ -1,5 +1,6 @@
 package com.example.firstapp
 
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -64,17 +65,17 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Log.i(TAG, geofenceTransitionDetails)
         } else {
             // Log the error.
-            println(geofenceTransition)
             Log.e(TAG, "error !  :')")
         }
 
     }
 
 
+    //Information on the geofence
+    @SuppressLint("VisibleForTests")
     private fun getGeofenceTransitionDetails(
         context: GeofenceBroadcastReceiver, transitionType: Int, triggeringGeofences: List<Geofence>
     ): String {
-        // Cette fonction construit une chaîne de détails sur la transition de géofence.
         val geofenceIdsList = mutableListOf<String>()
 
         for (geofence in triggeringGeofences) {
@@ -84,8 +85,8 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         val geofenceIds = TextUtils.join(", ", geofenceIdsList)
 
         return when (transitionType) {
-            Geofence.GEOFENCE_TRANSITION_ENTER -> "Entrée dans les géofences : $geofenceIds"
-            Geofence.GEOFENCE_TRANSITION_EXIT -> "Sortie des géofences : $geofenceIds"
+            Geofence.GEOFENCE_TRANSITION_ENTER -> "Entering geofences : $geofenceIds"
+            Geofence.GEOFENCE_TRANSITION_EXIT -> "Leaving geofences : $geofenceIds"
             else -> "Transition inconnue : $geofenceIds"
         }
     }
