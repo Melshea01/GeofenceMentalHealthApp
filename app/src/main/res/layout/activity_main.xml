@@ -92,6 +92,7 @@
 
         </RadioGroup>
         <Button
+            android:id="@+id/nextButton"
             android:layout_marginTop="30dp"
             android:padding="20dp"
             android:layout_width="320dp"

@@ -6,4 +6,5 @@
         <item name= "colorPrimary" >@color/app2 </item>
         <item name= "android:statusBarColor" >@color/app2 </item>
     </style>
+
 </resources>

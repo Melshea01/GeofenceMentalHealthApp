@@ -83,7 +83,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
         }
 
         val geofenceIds = TextUtils.join(", ", geofenceIdsList)
-
         return when (transitionType) {
             Geofence.GEOFENCE_TRANSITION_ENTER -> "Entering geofences : $geofenceIds"
             Geofence.GEOFENCE_TRANSITION_EXIT -> "Leaving geofences : $geofenceIds"

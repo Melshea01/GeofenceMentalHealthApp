@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">FirstApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="illustration_by_storyset_com">Illustration by Storyset.com</string>
+    <string name="welcome_to_the_mentalhealth_app">Welcome to the Mentalhealth app</string>
 </resources>
