@@ -12,6 +12,8 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -35,6 +37,7 @@ class MainActivity : FragmentActivity(){
     private val LOCATION_PERMISSION_CODE=100
     private val BACKGROUND_LOCATION_PERMISSION_CODE= 102
     private val NOTIFICATION_PERMISSION_CODE = 103
+
 
 
 
@@ -95,6 +98,23 @@ class MainActivity : FragmentActivity(){
             }
             true
         }
+
+        val crashButton = Button(this)
+        crashButton.text = "Test Crash"
+        crashButton.setOnClickListener {
+            throw RuntimeException("Test Crash") // Force a crash
+        }
+
+        addContentView(
+            crashButton, ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        )
+
+        //Manage geofence
+
+
 
 
     }

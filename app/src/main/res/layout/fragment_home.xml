@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,7 +10,6 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_centerInParent="true"
         android:gravity="center_horizontal"
         >
 
@@ -19,7 +17,7 @@
             android:id="@+id/firstFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/welcome_to_the_mentalhealth_app"
+            android:text="@string/welcome_to_the_mindfulness_app"
             android:gravity="center_horizontal"
             android:fontFamily="sans-serif-smallcaps"
             android:paddingTop="30dp"
@@ -31,9 +29,9 @@
             android:id="@+id/imageView"
             android:layout_width="wrap_content"
             android:layout_height="400dp"
-            android:src="@drawable/Home_icon"
+            android:src="@drawable/home_icon"
             android:scaleType="centerCrop"
-            android:contentDescription="Dame qui fait de la méditation" />
+            android:contentDescription="@string/dame_qui_fait_de_la_m_ditation" />
 
         <TextView
             android:id="@+id/textView"
@@ -42,6 +40,16 @@
 
             android:text="@string/illustration_by_storyset_com" />
 
+        <Button
+            android:id="@+id/geofencebutton"
+            android:layout_marginTop="70dp"
+            android:padding="20dp"
+            android:layout_width="320dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/mybutton"
+            android:text="Manage Geofences"
+            android:textSize="20sp"
+            android:textColor="@color/black" />
 
     </LinearLayout>
 </FrameLayout>
