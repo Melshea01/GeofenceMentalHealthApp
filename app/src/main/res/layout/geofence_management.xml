@@ -24,27 +24,17 @@
         android:text="Add Geofence" />
 
 
-    <TextView
-        android:id="@+id/geofenceTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/addGeofenceButton"
-        android:layout_marginTop="16dp"
-        android:text="Geofence list"
-        android:gravity="center"
-        android:textStyle="bold"
-        />
+
 
     <ListView
         android:id="@+id/geofenceListView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/geofenceTextView"
-        android:layout_marginTop="16dp"
-        android:text="Geofence list"
-        android:gravity="center"
-        android:textStyle="bold" />
-
+        android:layout_height="match_parent"
+        android:layout_below="@id/map"
+        android:layout_marginTop="69dp"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        android:padding="16dp" />
 
 
 </RelativeLayout>
