@@ -1,16 +1,17 @@
 package com.example.firstapp
 
+import android.app.AlertDialog
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.ListView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.Fragment
 import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -19,6 +20,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -27,58 +29,47 @@ import com.google.firebase.database.ValueEventListener
 import java.util.UUID
 
 
-class
-GeofenceActivity: FragmentActivity(),OnMapReadyCallback {
+class GeofenceActivity : Fragment(), OnMapReadyCallback {
+
     private lateinit var mMap: GoogleMap
-    private lateinit var addGeofenceButton: Button
     private var geofenceList = mutableListOf<GeofenceData>()
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var database: DatabaseReference
-    private var isPointSelected = false
+    private lateinit var helpButton: FloatingActionButton
     private val geofenceAdapter: ArrayAdapter<GeofenceData> by lazy {
-        ArrayAdapter<GeofenceData>(this, android.R.layout.simple_list_item_1, geofenceList)
+        ArrayAdapter<GeofenceData>(requireContext(), android.R.layout.simple_list_item_1, geofenceList)
     }
     val geofencesReference = FirebaseDatabase.getInstance().reference.child("Geofences")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.geofence_management)
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.geofence_management, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Initialize fusedLocationClient
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
 
         // Initialize Firebase database reference
         database = FirebaseDatabase.getInstance().reference.child("Geofences")
 
-        fetchGeofencesFromFirebase()
-        displayGeofencesOnMap()
-
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
+        val mapFragment = childFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
-
-
-
 
         // Initialiser l'écouteur pour récupérer les geofences depuis la base de données
         geofencesReference.addValueEventListener(geofencesValueEventListener)
 
-        // Définir l'adaptateur pour le ListView
-        val geofenceListView: ListView = findViewById(R.id.geofenceListView)
-        geofenceListView.adapter = geofenceAdapter
-
-
-        // Set up the button click listener to add geofence
-        addGeofenceButton = findViewById(R.id.addGeofenceButton)
-        addGeofenceButton.setOnClickListener {
-
-            // Call the method to add geofences to the database
-            addGeofencesToDatabase()
+        // Initialiser le bouton d'aide
+        helpButton = view.findViewById(R.id.helpButton)
+        helpButton.setOnClickListener {
+            showHelpDialog()
         }
-
-
-
     }
 
     private val geofencesValueEventListener = object : ValueEventListener {
@@ -95,13 +86,17 @@ GeofenceActivity: FragmentActivity(),OnMapReadyCallback {
 
             // Mettre à jour l'adaptateur pour refléter les nouvelles geofences
             geofenceAdapter.notifyDataSetChanged()
+
+            // Mettre à jour la carte après avoir récupéré les données
+            displayGeofencesOnMap()
         }
 
         override fun onCancelled(error: DatabaseError) {
             // Gérer les erreurs d'annulation
-            Toast.makeText(applicationContext, "Error retrieving geofences from database", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Error retrieving geofences from database", Toast.LENGTH_SHORT).show()
         }
     }
+
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
@@ -112,38 +107,10 @@ GeofenceActivity: FragmentActivity(),OnMapReadyCallback {
 
         // Set up the map click listener
         mMap.setOnMapClickListener { latLng ->
-            // Call the method to handle map click
             handleMapClick(latLng)
         }
 
-
     }
-
-    private fun fetchGeofencesFromFirebase() {
-        geofencesReference.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                // Effacer la liste existante
-                geofenceList.clear()
-
-                // Parcourir toutes les données dans la base de données
-                for (dataSnapshot in snapshot.children) {
-                    // Convertir les données en un objet GeofenceData et l'ajouter à la liste
-                    val geofenceData = dataSnapshot.getValue(GeofenceData::class.java)
-                    geofenceData?.let { geofenceList.add(it) }
-                }
-
-                // Mettre à jour la carte avec les nouvelles geofences
-                displayGeofencesOnMap()
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                // Gérer les erreurs d'annulation
-                Toast.makeText(applicationContext, "Error retrieving geofences from database", Toast.LENGTH_SHORT).show()
-            }
-        })
-    }
-
-
 
     private fun displayGeofencesOnMap() {
         // Assurez-vous que la carte est prête
@@ -165,13 +132,59 @@ GeofenceActivity: FragmentActivity(),OnMapReadyCallback {
                 )
 
                 // Ajoutez également un marqueur pour chaque geofence (facultatif)
-                mMap.addMarker(
+                val marker = mMap.addMarker(
                     MarkerOptions()
                         .position(geofenceLatLng)
 //                        .title("Geofence: ${geofence.name}") // Utilisez le nom de la geofence (si disponible)
                 )
+
+                marker?.tag = geofence
             }
+
+            mMap.setOnMarkerClickListener { marker ->
+                // Récupérez la geofence associée au marqueur
+                val geofence = marker.tag as? GeofenceData
+                geofence?.let {
+                    // Affichez une boîte de dialogue de confirmation de suppression
+                    showDeleteGeofenceConfirmationDialog(it)
+                }
+                // Indiquez que le clic sur le marqueur est géré ici
+                true
+            }
+
         }
+    }
+
+    private fun showDeleteGeofenceConfirmationDialog(geofence: GeofenceData) {
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+
+        // Configure the AlertDialog
+        alertDialogBuilder.setTitle("Delete Geofence")
+        alertDialogBuilder.setMessage("Are you sure you want to delete this geofence?")
+        alertDialogBuilder.setPositiveButton("Yes") { _, _ ->
+            // User clicked "Yes," so proceed with deleting the geofence
+            deleteGeofence(geofence)
+        }
+
+        alertDialogBuilder.setNegativeButton("No") { _, _ ->
+            // User clicked "No," so do nothing
+        }
+
+        // Create and show the AlertDialog
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private fun deleteGeofence(geofence: GeofenceData) {
+        // Supprimer la geofence de la liste
+        geofenceList.remove(geofence)
+
+        // Supprimer la geofence de la base de données
+        val geofenceReference = geofencesReference.child(geofence.id)
+        geofenceReference.removeValue()
+
+        // Mettre à jour la carte et la liste après la suppression
+        displayGeofencesOnMap()
     }
 
 
@@ -179,11 +192,11 @@ GeofenceActivity: FragmentActivity(),OnMapReadyCallback {
     private fun getLastKnownLocation() {
         // Check location permissions
         if (ActivityCompat.checkSelfPermission(
-                this,
+                requireContext(),
                 android.Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(
-                this,
+                requireContext(),
                 android.Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
@@ -201,50 +214,64 @@ GeofenceActivity: FragmentActivity(),OnMapReadyCallback {
 
     //Retrieve information on a map to create the needed information
     private fun handleMapClick(latLng: LatLng) {
-        val latitude = latLng.latitude
-        val longitude = latLng.longitude
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
 
-        // Add a marker
-        mMap.clear()
-        mMap.addMarker(MarkerOptions().position(latLng).title("Chosen area"))
+        // Configure the AlertDialog
+        alertDialogBuilder.setTitle("Add Geofence")
+        alertDialogBuilder.setMessage("Are you sure you want to add a geofence at this location?")
+        alertDialogBuilder.setPositiveButton("Yes") { _, _ ->
+            // User clicked "Yes," so proceed with adding the geofence
 
-        // Generate
-        val uniqueGeofenceId = UUID.randomUUID().toString()
-        val geofenceInfo = GeofenceData(uniqueGeofenceId, latitude, longitude,200)
-        geofenceList.clear()
-        geofenceList.add(geofenceInfo)
-        displayGeofencesOnMap()
+            // Add a marker
+            mMap.addMarker(MarkerOptions().position(latLng).title("Chosen area"))
 
-        // Check if a point is selected
-        isPointSelected = true
+            // Generate new geofence
+            val uniqueGeofenceId = UUID.randomUUID().toString()
+            val geofenceInfo = GeofenceData(uniqueGeofenceId, latLng.latitude, latLng.longitude, 200)
+            geofenceList.add(geofenceInfo)
 
-        // Test the coordinate
-        val toastMessage = "Latitude: $latitude, Longitude: $longitude"
-        Toast.makeText(this, toastMessage, Toast.LENGTH_SHORT).show()
+            //Add geofence to database
+            addGeofencesToDatabase()
+            displayGeofencesOnMap()
+
+        }
+
+        alertDialogBuilder.setNegativeButton("No") { _, _ ->
+            // User clicked "No," so do nothing
+        }
+
+        // Create and show the AlertDialog
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
     private fun addGeofencesToDatabase() {
         // Check if a point has been selected
-        if (isPointSelected) {
             // Loop through the geofenceList and add each geofence to the Firebase database
             for (geofence in geofenceList) {
-
                 // Use the geofence request ID as the key in the database
-
                 database.child(geofence.id).setValue(geofence)
-                Toast.makeText(this, "added to database", Toast.LENGTH_SHORT).show()
             }
             // Clear the geofenceList after adding to the database
             geofenceList.clear()
-
-            // Reset the variable to indicate that no point is selected
-            isPointSelected = false
-        } else {
-            // Inform the user that they need to select a point on the map before adding a geofence
-            Toast.makeText(this, "Select a point on the map first", Toast.LENGTH_SHORT).show()
         }
+
+    fun showHelpDialog() {
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+
+        // Configure the AlertDialog
+        alertDialogBuilder.setTitle("Help")
+        alertDialogBuilder.setMessage(
+            "To add a geofence, tap on the map. A marker representing the geofence will be placed on the map. " +
+                    "To delete a geofence, tap on the one you are interested in and confirm the deletion. " +
+                    "If no geofences appear, it may be due to a connection issue."
+        )
+        alertDialogBuilder.setPositiveButton("OK") { _, _ ->
+            // User clicked "OK," so close the dialog
+        }
+
+        // Create and show the AlertDialog
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 
 }
-
-
-

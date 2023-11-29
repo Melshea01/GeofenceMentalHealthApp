@@ -10,8 +10,7 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        >
+        android:gravity="center_horizontal">
 
         <TextView
             android:id="@+id/firstFragment"
@@ -37,19 +36,6 @@
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-
             android:text="@string/illustration_by_storyset_com" />
-
-        <Button
-            android:id="@+id/geofencebutton"
-            android:layout_marginTop="70dp"
-            android:padding="20dp"
-            android:layout_width="320dp"
-            android:layout_height="wrap_content"
-            android:background="@drawable/mybutton"
-            android:text="Manage Geofences"
-            android:textSize="20sp"
-            android:textColor="@color/black" />
-
     </LinearLayout>
 </FrameLayout>

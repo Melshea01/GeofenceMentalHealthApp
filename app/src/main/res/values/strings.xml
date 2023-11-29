@@ -6,4 +6,5 @@
     <string name="welcome_to_the_mentalhealth_app">Welcome to the Mentalhealth app</string>
     <string name="welcome_to_the_mindfulness_app" />
     <string name="dame_qui_fait_de_la_m_ditation">Dame qui fait de la méditation</string>
+    <string name="help_button">Help Button</string>
 </resources>

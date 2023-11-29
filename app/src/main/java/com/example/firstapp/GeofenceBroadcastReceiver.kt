@@ -21,8 +21,6 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
     // ...
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onReceive(context: Context?, intent: Intent?) {
-         println("reception message")
-
         val geofencingEvent = intent?.let { GeofencingEvent.fromIntent(it) }
 
 
@@ -58,10 +56,10 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 NotificationManager::class.java
             ) as NotificationManager
 
-           // Error on this line
-            notificationManager.sendGeofenceEnteredNotification(context)
 
-            // sendNotification(geofenceTransitionDetails)
+            notificationManager.sendGeofenceEnteredNotification(context, geofenceTransitionDetails )
+
+
             Log.i(TAG, geofenceTransitionDetails)
         } else {
             // Log the error.
@@ -89,6 +87,5 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             else -> "Transition inconnue : $geofenceIds"
         }
     }
-
 
 }

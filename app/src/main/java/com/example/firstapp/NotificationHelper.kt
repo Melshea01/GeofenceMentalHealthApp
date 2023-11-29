@@ -1,16 +1,12 @@
 package com.example.firstapp
 
-import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Build
-import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 
 private const val NOTIFICATION_ID = 33
 private const val CHANNEL_ID = "GeofenceChannel"
@@ -25,9 +21,9 @@ fun createChannel(context: Context) {
 }
 
 
-fun NotificationManager.sendGeofenceEnteredNotification(context: Context) {
+fun NotificationManager.sendGeofenceEnteredNotification(context: Context, notificationContent: String) {
     //Opening the Notification
-    val contentIntent = Intent(context, MainActivity::class.java)
+    val contentIntent = Intent(context, QuestionnaireActivity::class.java)
     val contentPendingIntent = PendingIntent.getActivity(
         context,
         NOTIFICATION_ID,
@@ -35,14 +31,14 @@ fun NotificationManager.sendGeofenceEnteredNotification(context: Context) {
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
     )
 
-    //Building the notification
-    // if transition enters
+    // Building the notification
     val builder = NotificationCompat.Builder(context, CHANNEL_ID)
         .setContentTitle(context.getString(R.string.app_name))
-        .setContentText("You have entered a geofenced area")
+        .setContentText(notificationContent)
         .setSmallIcon(R.drawable.ic_notification)
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setContentIntent(contentPendingIntent)
+        .setAutoCancel(true)
         .build()
 
     this.notify(NOTIFICATION_ID, builder)

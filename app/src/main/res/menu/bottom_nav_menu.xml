@@ -5,6 +5,10 @@
         android:title="Home"
         android:icon="@drawable/ic_home"/>
     <item
+        android:id="@+id/geofence"
+        android:title="Geofences"
+        android:icon="@drawable/ic_localisation"/>
+    <item
         android:id="@+id/quizz"
         android:title="Quizz"
         android:icon="@drawable/ic_menu"/>

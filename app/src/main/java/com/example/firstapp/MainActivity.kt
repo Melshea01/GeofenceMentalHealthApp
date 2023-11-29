@@ -12,8 +12,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
-import android.view.ViewGroup
-import android.widget.Button
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
@@ -26,6 +24,11 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
 import com.google.android.gms.location.LocationServices
+import com.google.firebase.FirebaseApp
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 
 class MainActivity : FragmentActivity(){
@@ -53,6 +56,9 @@ class MainActivity : FragmentActivity(){
         super.onCreate(savedInstanceState)
         // Create channel for notification
         createChannel(this)
+
+        //Initialize database
+        FirebaseApp.initializeApp(this)
 
         // Get geofencing client
         geofencingClient = LocationServices.getGeofencingClient(this)
@@ -94,27 +100,11 @@ class MainActivity : FragmentActivity(){
             when(it.itemId){
                 R.id.home->setCurrentFragment(HomeFragment())
                 R.id.quizz->setCurrentFragment(QuizzFragment())
-            //R.id.analyticss->setCurrentFragment(thirdFragment)
+                //R.id.analyticss->setCurrentFragment(thirdFragment)
+                R.id.geofence->setCurrentFragment(GeofenceActivity())
             }
             true
         }
-
-        val crashButton = Button(this)
-        crashButton.text = "Test Crash"
-        crashButton.setOnClickListener {
-            throw RuntimeException("Test Crash") // Force a crash
-        }
-
-        addContentView(
-            crashButton, ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-        )
-
-        //Manage geofence
-
-
 
 
     }
@@ -141,40 +131,79 @@ class MainActivity : FragmentActivity(){
     }
 
 
-    @SuppressLint("VisibleForTests")
-    private fun geofenceAddition(){
-        // Creation of the geofence
-        val geofence = Geofence.Builder()
-            .setRequestId("TestGeofence")
-            .setCircularRegion(46.049989, 14.468190, 100F)
-            .setExpirationDuration(Geofence.NEVER_EXPIRE)
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
-            .build()
+    private fun geofenceAddition(geofenceList: List<Geofence>) {
+        val geofencingRequest = getGeofencingRequest(geofenceList)
 
-        // Adding the geofence
-        val geofencingRequest = GeofencingRequest.Builder().apply {
-            setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
-            addGeofence(geofence)
-        }.build()
-
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // L'autorisation ACCESS_FINE_LOCATION n'a pas été accordée, vous pouvez gérer cela ici.
-            // Vous pouvez afficher un message d'erreur ou prendre des mesures supplémentaires.
-        } else {
-            geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent).run {
-                // Handle success and failure of adding geofence
-                addOnSuccessListener {
-                    println("Geofence added successfully")
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)
+                .addOnSuccessListener {
+                    Log.d(TAG, "Geofences added successfully")
                 }
-                addOnFailureListener { e ->
-                    println("Error adding geofence: ${e.message}")
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Error adding geofences: ${e.message}")
+                }
+        }
+    }
+
+    private fun getExistingGeofencesFromDatabase() {
+        val geofencesReference = FirebaseDatabase.getInstance().reference.child("Geofences")
+        geofencesReference.addListenerForSingleValueEvent(object : ValueEventListener {
+            @SuppressLint("VisibleForTests")
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val geofenceList = mutableListOf<Geofence>()
+
+                for (dataSnapshot in snapshot.children) {
+                    val geofenceData = dataSnapshot.getValue(GeofenceData::class.java)
+
+
+                    geofenceData?.let {
+                        val geofence = Geofence.Builder()
+                            .setRequestId(it.id)
+                            .setCircularRegion(it.latitude, it.longitude, it.radius.toFloat())
+                            .setExpirationDuration(Geofence.NEVER_EXPIRE)
+                            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
+                            .build()
+                        geofenceList.add(geofence)
+                    }
+                }
+
+                // Ajouter les geofences à la GeofencingClient
+                if (geofenceList.isNotEmpty()) {
+                    if (ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return
+                    }
+
+                    geofencingClient.addGeofences(getGeofencingRequest(geofenceList), geofencePendingIntent)
+                        .addOnSuccessListener {
+                            Log.d(TAG, "Existing geofences added successfully")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Error adding existing geofences: ${e.message}")
+                        }
                 }
             }
 
-        }
-
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, "Error retrieving geofences from database: ${error.message}")
+            }
+        })
     }
 
+    private fun getGeofencingRequest(geofenceList: List<Geofence>): GeofencingRequest {
+        return GeofencingRequest.Builder().apply {
+            setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
+            addGeofences(geofenceList)
+        }.build()
+    }
     private fun checkPermission() {
         if (ContextCompat.checkSelfPermission(
                 this@MainActivity,
@@ -184,12 +213,13 @@ class MainActivity : FragmentActivity(){
             // Fine Location permission is granted
             // Check if current android version >= 11, if >= 11 check for Background Location permission
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                if (ContextCompat.checkSelfPermission(
-                        this@MainActivity,
+                if (ContextCompat.checkSelfPermission(this@MainActivity,
                         Manifest.permission.ACCESS_BACKGROUND_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    geofenceAddition()
+                )
+                {
+                    geofencingClient = LocationServices.getGeofencingClient(this)
+                    getExistingGeofencesFromDatabase()
                 } else {
                     // Ask for Background Location Permission
                     askPermissionForBackgroundUsage()
@@ -324,12 +354,4 @@ class MainActivity : FragmentActivity(){
             }
         }
     }
-
 }
-
-
-
-
-
-
-
