@@ -1,0 +1,59 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- Titre de la page -->
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Vos Informations"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"/>
+
+    <!-- Section d'informations de l'utilisateur -->
+    <LinearLayout
+        android:id="@+id/userInfoContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/textViewTitle"
+        android:layout_marginTop="16dp">
+
+        <!-- Nom de l'utilisateur -->
+        <TextView
+            android:id="@+id/textViewUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nom d'utilisateur: John Doe"
+            android:textSize="18sp"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Adresse e-mail de l'utilisateur -->
+        <TextView
+            android:id="@+id/textViewEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="E-mail: john.doe@email.com"
+            android:textSize="18sp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Autres informations de l'utilisateur peuvent être ajoutées ici -->
+
+    </LinearLayout>
+
+    <!-- Bouton de déconnexion stylisé -->
+    <Button
+        android:id="@+id/buttonLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Déconnexion"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#FF0000"
+        android:layout_below="@id/userInfoContainer"
+        android:layout_marginTop="24dp"/>
+
+</RelativeLayout>

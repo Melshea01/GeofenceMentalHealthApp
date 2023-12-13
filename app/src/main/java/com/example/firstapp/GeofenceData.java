@@ -3,13 +3,18 @@ package com.example.firstapp;
 import com.google.firebase.database.Exclude;
 
 public class GeofenceData {
+
     private String id;
+
+    private String id_user;
     private double latitude;
+
     private double longitude;
     private int radius;
 
-    public GeofenceData(String id, double latitude, double longitude, int radius) {
+    public GeofenceData(String id, String id_user, double latitude, double longitude, int radius) {
         this.id = id;
+        this.id_user = id_user;
         this.latitude = latitude;
         this.longitude = longitude;
         this.radius = radius;
@@ -32,5 +37,9 @@ public class GeofenceData {
 
     public double getRadius() {
         return radius;
+    }
+
+    public String getId_user() {
+        return id_user;
     }
 }

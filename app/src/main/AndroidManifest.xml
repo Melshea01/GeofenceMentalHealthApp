@@ -36,7 +36,6 @@
             android:theme="@style/Theme.FirstApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
@@ -50,7 +49,35 @@
         </activity>
         <activity
             android:name=".GeofenceActivity"
-            android:label="GeofenceAcitivy"
+            android:label="GeofenceActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FirstApp">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SignUpActivity"
+            android:label="SignUpActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FirstApp">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SignInActivity"
+            android:label="SignInActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FirstApp">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ProfileActivity"
+            android:label="ProfileActivity"
             android:exported="true"
             android:theme="@style/Theme.FirstApp">
             <intent-filter>

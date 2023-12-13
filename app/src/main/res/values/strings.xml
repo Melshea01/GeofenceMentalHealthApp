@@ -7,4 +7,10 @@
     <string name="welcome_to_the_mindfulness_app" />
     <string name="dame_qui_fait_de_la_m_ditation">Dame qui fait de la méditation</string>
     <string name="help_button">Help Button</string>
+    <string name="real_app_name">MindfulnessApp</string>
+    <string name="manage_account">Manage Account</string>
+    <string name="logout">Logout</string>
+    <string name="select_a_date">Select a Date</string>
+    <string name="arousal_statistic">Arousal statistic</string>
+    <string name="valence_statistic">Valence Statistic</string>
 </resources>

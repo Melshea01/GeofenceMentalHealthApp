@@ -1,30 +1,41 @@
 package com.example.firstapp
 
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
+import android.content.Intent
 import android.graphics.Color
-import android.graphics.Matrix
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.RectF
 import android.os.Bundle
 import android.view.MotionEvent
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.example.firstapp.databinding.ActivityMainBinding
+import com.github.mikephil.charting.charts.ScatterChart
+import com.github.mikephil.charting.components.LimitLine
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.ScatterData
+import com.github.mikephil.charting.data.ScatterDataSet
+import com.github.mikephil.charting.listener.ChartTouchListener
+import com.github.mikephil.charting.listener.OnChartGestureListener
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import java.util.Date
+import java.util.UUID
 
 
 class QuestionnaireActivity : FragmentActivity() {
-
-
     private lateinit var binding: ActivityMainBinding
-    private lateinit var myImageView: ImageView
-    private var bitmap: Bitmap? = null
-    private var canvas: Canvas? = null
-    private var paint: Paint? = null
+    private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var user: FirebaseUser
+    val database = FirebaseDatabase.getInstance()
+
+    private lateinit var scatterChart: ScatterChart
+    private var userPoints = ArrayList<Entry>()
+
+    private var xVal: Float = -2.0f
+    private var yVal: Float = -2.0f
 
 
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
@@ -33,108 +44,196 @@ class QuestionnaireActivity : FragmentActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Récupérer les références aux vues
-        myImageView = binding.myImageView
+        scatterChart = findViewById(R.id.scatterChart)
         val submitButton = binding.submitButton
 
 
-        myImageView.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_DOWN -> {
-                    val x = event.x
-                    val y = event.y
+        // Initialize FirebaseAuth
+        firebaseAuth = FirebaseAuth.getInstance()
+        user = firebaseAuth.currentUser!!
+        val answerReference = database.reference.child(user.uid)
 
-                    //Move the place of the point
-                    drawPoint(x, y)
+        //Design of the scatterplot
+        val entries: List<Entry> = ArrayList()
 
-                    // Testing
-                    //Toast.makeText(this, "Clicked at: $x, $y", Toast.LENGTH_SHORT).show()
+        // Créer un ensemble de données de dispersion avec des points vides
+        val dataSet = ScatterDataSet(entries, "Data Set 1")
+        dataSet.color = Color.TRANSPARENT // Rendre le set de données transparent
 
-                    val centerX = myImageView.drawable.intrinsicWidth / 2.0f
-                    val centerY = myImageView.drawable.intrinsicHeight / 2.0f
-                    val corr_X = (x - centerX)
-                    val corr_Y = (centerY - y)
 
-                    // Testing
-                    //Toast.makeText(this, "corrected click at: $corr_X, $corr_Y", Toast.LENGTH_SHORT).show()
-                    true
-                }
-                else -> false
+        val scatterData = ScatterData(dataSet)
+        scatterChart.data = scatterData
+
+
+        // Personnaliser l'axe X (valence)
+
+        val xAxis = scatterChart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(true)
+        xAxis.isGranularityEnabled = true
+        xAxis.granularity = 0.2f // Définir la graduation
+        xAxis.axisMinimum = -1f // Définir la valeur minimale pour l'axe X
+        xAxis.axisMaximum = 1f // Définir la valeur maximale pour l'axe X
+
+
+        //Line x=0
+        val limitLine = LimitLine(0f)
+        limitLine.lineWidth = 2f
+        limitLine.lineColor = Color.BLACK
+        limitLine.label = "High Emotion"
+        limitLine.labelPosition = LimitLine.LimitLabelPosition.RIGHT_TOP // Set position to RIGHT_TOP or LEFT_TOP
+        xAxis.addLimitLine(limitLine)
+
+        val limitLine2 = LimitLine(0f)
+        limitLine2.lineWidth = 2f
+        limitLine2.lineColor = Color.BLACK
+        limitLine2.label = "Low Emotion"
+        limitLine2.labelPosition = LimitLine.LimitLabelPosition.RIGHT_BOTTOM // Set position to RIGHT_TOP or LEFT_TOP
+        xAxis.addLimitLine(limitLine2)
+
+        val yAxis = scatterChart.axisLeft
+        yAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART)
+        yAxis.setDrawGridLines(true)
+        yAxis.axisMinimum = -1f
+        yAxis.axisMaximum = 1f
+
+        //Line y=0
+        val limitLineY = LimitLine(0f)
+        limitLineY.lineWidth = 2f
+        limitLineY.label = "Negative"
+        limitLineY.lineColor = Color.BLACK
+        limitLine.labelPosition = LimitLine.LimitLabelPosition.RIGHT_TOP
+        yAxis.addLimitLine(limitLineY)
+
+        val limitLineY2 = LimitLine(0f)
+        limitLineY2.lineWidth = 2f
+        limitLineY2.label = "Positive"
+        limitLineY2.lineColor = Color.BLACK
+        limitLineY2.labelPosition = LimitLine.LimitLabelPosition.LEFT_TOP
+        yAxis.addLimitLine(limitLineY2)
+
+        // Désactiver l'axe Y à droite
+        scatterChart.axisRight.isEnabled = false
+
+        // Mettez à jour le graphique
+        scatterChart.description.isEnabled = false
+        scatterChart.invalidate()
+
+        scatterChart.onChartGestureListener = object : OnChartGestureListener {
+            override fun onChartGestureStart(
+                me: MotionEvent?,
+                lastPerformedGesture: ChartTouchListener.ChartGesture?
+            ) {
+                // Vous pouvez ajouter votre logique ici lorsque le geste commence
+            }
+
+            override fun onChartGestureEnd(
+                me: MotionEvent?,
+                lastPerformedGesture: ChartTouchListener.ChartGesture?
+            ) {
+                // Vous pouvez ajouter votre logique ici lorsque le geste se termine
+            }
+
+            override fun onChartLongPressed(me: MotionEvent?) {
+                // Vous pouvez ajouter votre logique ici lorsque le graphique est longuement pressé
+            }
+
+            override fun onChartDoubleTapped(me: MotionEvent?) {
+                // Vous pouvez ajouter votre logique ici lorsque le graphique est double-cliqué
+            }
+
+            override fun onChartSingleTapped(me: MotionEvent?) {
+                // Obtenez les coordonnées du point touché
+                val pos = scatterChart.getValuesByTouchPoint(me!!.x, me.y, YAxis.AxisDependency.LEFT)
+
+                // Coordinate x and y of the point
+                xVal = pos.x.toFloat()
+                yVal = pos.y.toFloat()
+
+
+                // add the point on the plot
+                addPoint(xVal, yVal)
+
+            }
+
+            override fun onChartFling(
+                me1: MotionEvent?,
+                me2: MotionEvent?,
+                velocityX: Float,
+                velocityY: Float
+            ) {
+
+            }
+
+            override fun onChartScale(me: MotionEvent?, scaleX: Float, scaleY: Float) {
+                // Vous pouvez ajouter votre logique ici lorsque le graphique est mis à l'échelle
+            }
+
+            override fun onChartTranslate(me: MotionEvent?, dX: Float, dY: Float) {
+                // Vous pouvez ajouter votre logique ici lorsque le graphique est déplacé
             }
         }
 
+
+
         submitButton.setOnClickListener {
-            // redirige vers l'activité principal la class MainActivity
+            if (xVal != -2.0f && yVal != -2.0f) {
+                // Retrieve current date
+                val currentDate = Date()
+                val answerId = answerReference.push().key ?: UUID.randomUUID().toString()
 
-            //TODO : save information into the database
+                // Create Answer object
+                val answer = Answer(
+                    id = answerId,
+                    x = xVal,
+                    y = yVal,
+                    date = currentDate
+                )
 
-            // Provide feedback to the user (optional)
-            Toast.makeText(this, "Results saved to the database", Toast.LENGTH_SHORT).show()
+                addAnswertoDatabase(answer, answerReference)
+                // Provide feedback to the user (optional)
+                Toast.makeText(this, "Results saved to the database", Toast.LENGTH_SHORT).show()
+
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+
+            } else {
+                // Handle the case when corr_X or corr_Y is null
+                Toast.makeText(this, "Invalid data. Please try again.", Toast.LENGTH_SHORT).show()
+            }
+
         }
-
-
-
 
     }
 
-    private fun drawPoint(x: Float, y: Float) {
-        // Initialize bitmap and canvas if not already initialized
-        if (bitmap == null) {
-            // Load your background image here
-            val backgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.empty_grid)
 
-            // Create a new bitmap with the background image
-            bitmap = Bitmap.createBitmap(myImageView.width, myImageView.height, Bitmap.Config.ARGB_8888)
-            canvas = Canvas(bitmap!!)
+    private fun addPoint(x: Float, y: Float) {
+        userPoints.clear()
+        userPoints.add(Entry(x, y))
 
-            // Draw the background image using Matrix to maintain its original size
-            val matrix = Matrix()
-            matrix.setRectToRect(
-                RectF(0f, 0f, backgroundBitmap.width.toFloat(), backgroundBitmap.height.toFloat()),
-                RectF(0f, 0f, myImageView.width.toFloat(), myImageView.height.toFloat()),
-                Matrix.ScaleToFit.CENTER
-            )
-            canvas?.drawBitmap(backgroundBitmap, matrix, null)
+        val userDataSet = ScatterDataSet(userPoints, "user")
+        userDataSet.setScatterShape(ScatterChart.ScatterShape.CIRCLE)
+        userDataSet.color = Color.RED
+        userDataSet.setDrawValues(false)
 
-            myImageView.setImageBitmap(bitmap)
-        } else {
-            // Clear the canvas to remove previous points and set the new one
-            canvas?.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
-            val backgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.empty_grid)
+        val scatterData = ScatterData(userDataSet)
+        scatterChart.data = scatterData
+        scatterChart.invalidate()
 
-            // Create a new bitmap with the background image
-            bitmap = Bitmap.createBitmap(myImageView.width, myImageView.height, Bitmap.Config.ARGB_8888)
-            canvas = Canvas(bitmap!!)
+    }
 
-            // Draw the background image using Matrix to maintain its original size
-            val matrix = Matrix()
-            matrix.setRectToRect(
-                RectF(0f, 0f, backgroundBitmap.width.toFloat(), backgroundBitmap.height.toFloat()),
-                RectF(0f, 0f, myImageView.width.toFloat(), myImageView.height.toFloat()),
-                Matrix.ScaleToFit.CENTER
-            )
-            canvas?.drawBitmap(backgroundBitmap, matrix, null)
+    private fun addAnswertoDatabase(answer:Answer , firebaseReference: DatabaseReference){
 
-            myImageView.setImageBitmap(bitmap)
-        }
-
-        // Initialize the paint if not already done
-        if (paint == null) {
-            paint = Paint()
-            paint!!.color = Color.RED
-            paint!!.strokeWidth = 20f // Increase the size of the point
-            paint!!.strokeCap = Paint.Cap.ROUND // Make the point round
-        }
-
-        // Get the position of the point relative to the displayed image in myImageView
-        val scaledX = x * myImageView.drawable.intrinsicWidth / myImageView.width
-        val scaledY = y * myImageView.drawable.intrinsicHeight / myImageView.height
-
-        // Draw the point on the canvas
-        canvas?.drawPoint(scaledX, scaledY, paint!!)
-
-        // Refresh the ImageView to display the point
-        myImageView.invalidate()
+        //Handle the network issue
+        user?.let { firebaseReference.child("Answer").child(answer.id).setValue(answer) }
+            ?: Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
     }
 
 }
+
+data class Answer(
+    val id: String,
+    val x: Float,
+    val y: Float,
+    val date: Date
+)

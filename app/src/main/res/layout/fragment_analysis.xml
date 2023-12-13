@@ -1,0 +1,145 @@
+<!-- fragment_analysis.xml -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        tools:context=".AnalysisFragment">
+
+        <!-- Your graph with a CardView for a modern appearance -->
+        <!-- CardView for the first graph -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="350dp"
+            android:layout_height="500dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:cardUseCompatPadding="true"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Content of the CardView -->
+            <LinearLayout
+                android:layout_width="350dp"
+                android:layout_height="500dp"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Title of the first graph -->
+                <TextView
+                    android:id="@+id/graphTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Temporal Mood Scatter Plot"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Date Picker for the first graph -->
+                <EditText
+                    android:id="@+id/datePickerEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/select_a_date"
+                    android:autofillHints="Date"
+                    android:inputType="none"
+                    android:focusable="false"
+                    android:drawableRight="@drawable/ic_calendar"
+                    android:onClick="showDatePickerDialog"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Scatter Chart for the first graph -->
+                <com.github.mikephil.charting.charts.ScatterChart
+                    android:id="@+id/graphView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CardView for the second graph -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="350dp"
+            android:layout_height="500dp"
+            android:layout_weight="1"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:cardUseCompatPadding="true"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Content of the CardView -->
+            <LinearLayout
+                android:layout_width="350dp"
+                android:layout_height="500dp"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Title of the second graph -->
+                <TextView
+                    android:id="@+id/graphTitle2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/arousal_statistic"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Scatter Chart for the second graph -->
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/barChartArousal"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="20dp"/>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CardView for the second graph -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="350dp"
+            android:layout_height="500dp"
+            android:layout_weight="1"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="4dp"
+            app:cardUseCompatPadding="true"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Content of the CardView -->
+            <LinearLayout
+                android:layout_width="350dp"
+                android:layout_height="500dp"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Title of the second graph -->
+                <TextView
+                    android:id="@+id/graphTitle3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/valence_statistic"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/barChartValence"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Other UI elements if necessary -->
+
+    </LinearLayout>
+</ScrollView>

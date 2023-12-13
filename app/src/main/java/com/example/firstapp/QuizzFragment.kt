@@ -29,5 +29,6 @@ class QuizzFragment : Fragment() {
         return view
     }
 
-
 }
+
+

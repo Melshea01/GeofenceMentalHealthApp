@@ -78,12 +78,15 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation ("com.google.android.gms:play-services-location:19.0.1")
     implementation ("com.google.android.gms:play-services-maps:18.1.0")
+
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
-
-    // Add the dependency for the Realtime Database library
-    // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation("com.google.firebase:firebase-database")
+    implementation("com.google.firebase:firebase-auth")
+
+    //Chart library import
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     implementation("com.google.android.material:material:1.10.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

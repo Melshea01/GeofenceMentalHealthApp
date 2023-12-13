@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <style name="Theme.FirstApp" parent="android:Theme.Material.Light.NoActionBar">
         <!--- Customize the ligth theme of the App -->
         <item name= "colorPrimary" >@color/app2 </item>
         <item name= "android:statusBarColor" >@color/app2 </item>
     </style>
-
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 </resources>

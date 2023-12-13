@@ -1,23 +1,31 @@
 package com.example.firstapp
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.service.controls.ControlsProviderService.TAG
 import android.text.TextUtils
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofenceStatusCodes
 import com.google.android.gms.location.GeofencingEvent
-
+import com.google.android.gms.location.GeofencingRequest
+import com.google.android.gms.location.LocationServices
 
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
+
+
     // ...
     @RequiresApi(Build.VERSION_CODES.R)
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -57,16 +65,16 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             ) as NotificationManager
 
 
-            notificationManager.sendGeofenceEnteredNotification(context, geofenceTransitionDetails )
-
-
+            notificationManager.sendGeofenceEnteredNotification(context, geofenceTransitionDetails)
             Log.i(TAG, geofenceTransitionDetails)
         } else {
             // Log the error.
             Log.e(TAG, "error !  :')")
         }
-
     }
+
+
+
 
 
     //Information on the geofence
@@ -85,7 +93,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
             Geofence.GEOFENCE_TRANSITION_ENTER -> "Entering geofences : $geofenceIds"
             Geofence.GEOFENCE_TRANSITION_EXIT -> "Leaving geofences : $geofenceIds"
             else -> "Transition inconnue : $geofenceIds"
+
         }
     }
-
 }
